@@ -61,8 +61,14 @@ body {
 .cell.x::before,
 .cell.x::after,
 .cell.circle::before {
-    background-color: black;
+    background-color: red;
 }
+
+.dark-mode {
+  background-color: black;
+  color: white;
+}
+
 
 .board.x .cell:not(.x):not(.circle):hover::before,
 .board.x .cell:not(.x):not(.circle):hover::after,
