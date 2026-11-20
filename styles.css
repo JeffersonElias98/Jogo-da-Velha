@@ -22,7 +22,7 @@
   --danger: #dc2626;
   --win-bg: rgba(22, 163, 74, 0.14);
   --shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
-  --cell-size: clamp(82px, 24vw, 108px);
+  --cell-size: clamp(70px, 21vw, 100px);
   --mark-size: calc(var(--cell-size) * 0.72);
 }
 
@@ -48,6 +48,7 @@ body.dark-mode {
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg);
   color: var(--text);
@@ -56,13 +57,15 @@ body {
 }
 
 .app-shell {
+  width: 100%;
   max-width: 480px;
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
-  padding: 20px 16px 24px;
+  padding: 16px 14px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* Header */
@@ -74,14 +77,14 @@ body {
 
 .brand h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -90,7 +93,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
@@ -107,7 +110,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
-  padding: 5px;
+  padding: 4px;
   background: var(--surface-muted);
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -118,9 +121,9 @@ body {
   background: transparent;
   color: var(--text-muted);
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
-  padding: 10px 12px;
+  padding: 9px 10px;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
@@ -133,9 +136,6 @@ body {
 }
 
 /* Online Panel */
-.online-panel[hidden],
-.panel-card[hidden],
-.game-area[hidden],
 [hidden] {
   display: none !important;
 }
@@ -143,36 +143,23 @@ body {
 .panel-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: 14px;
+  padding: 12px 14px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.field-group label,
-.invite-box label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  gap: 10px;
 }
 
 input[type="text"] {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
+  padding: 8px 11px;
+  border-radius: 9px;
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -181,32 +168,6 @@ input[type="text"]:focus {
   border-color: var(--o-color);
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-muted);
-  font-size: 0.8rem;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.join-form {
-  display: flex;
-  gap: 8px;
-}
-
-.join-form input {
-  flex: 1;
-}
-
-/* Active room */
 .room-header {
   display: flex;
   align-items: center;
@@ -215,17 +176,23 @@ input[type="text"]:focus {
   flex-wrap: wrap;
 }
 
+.room-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.88rem;
+  gap: 7px;
+  font-size: 0.84rem;
   font-weight: 600;
 }
 
 .status-dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--warning);
   flex-shrink: 0;
@@ -241,10 +208,10 @@ input[type="text"]:focus {
 
 .room-code-badge {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 7px;
   background: var(--surface-muted);
   border: 1px solid var(--border);
 }
@@ -255,38 +222,73 @@ input[type="text"]:focus {
   gap: 6px;
 }
 
-.invite-row {
+.invite-box label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.invite-box input {
+  font-size: 0.82rem;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.invite-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.invite-row input {
-  flex: 1 1 180px;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+.invite-actions .btn-primary {
+  flex: 1 1 auto;
 }
 
-.invite-hint {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.room-footer-actions {
+.room-tools {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.name-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 160px;
+}
+
+.name-inline label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.name-inline input {
+  padding: 5px 8px;
+  font-size: 0.82rem;
+}
+
+.join-form {
+  display: flex;
+  gap: 8px;
+}
+
+.join-form input {
+  flex: 1;
 }
 
 /* Buttons */
 .btn {
   border: 1px solid transparent;
-  border-radius: 10px;
-  padding: 10px 14px;
+  border-radius: 9px;
+  padding: 9px 13px;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -305,8 +307,9 @@ input[type="text"]:focus {
   cursor: not-allowed;
 }
 
-.btn-full {
-  width: 100%;
+.btn-xs {
+  padding: 5px 9px;
+  font-size: 0.76rem;
 }
 
 .btn-sm {
@@ -349,22 +352,12 @@ input[type="text"]:focus {
   color: var(--text);
 }
 
-.btn-danger-ghost {
-  background: transparent;
-  color: var(--danger);
-  border-color: transparent;
-}
-
-.btn-danger-ghost:hover:not(:disabled) {
-  background: rgba(220, 38, 38, 0.1);
-}
-
 /* Game Area */
 .game-area {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex: 1;
 }
 
@@ -379,10 +372,11 @@ input[type="text"]:focus {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
@@ -390,7 +384,7 @@ input[type="text"]:focus {
   flex-direction: column;
   justify-content: center;
   gap: 2px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   text-align: center;
 }
 
@@ -405,10 +399,10 @@ input[type="text"]:focus {
 }
 
 .score-mark {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 900;
   line-height: 1;
-  width: 24px;
+  width: 22px;
   text-align: center;
   flex-shrink: 0;
 }
@@ -428,7 +422,7 @@ input[type="text"]:focus {
 }
 
 .score-label {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
@@ -437,19 +431,19 @@ input[type="text"]:focus {
 }
 
 .score-value {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .turn-banner {
   width: 100%;
   text-align: center;
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: 10px;
   background: var(--surface);
   border: 1px solid var(--border);
-  font-size: 0.94rem;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
@@ -460,8 +454,8 @@ input[type="text"]:focus {
   justify-content: center;
   align-content: center;
   background: var(--surface);
-  padding: 16px;
-  border-radius: 20px;
+  padding: 12px;
+  border-radius: 18px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
@@ -665,9 +659,9 @@ input[type="text"]:focus {
 
 footer {
   margin-top: auto;
-  padding-top: 8px;
+  padding-top: 4px;
   text-align: center;
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   color: var(--text-muted);
 }
 

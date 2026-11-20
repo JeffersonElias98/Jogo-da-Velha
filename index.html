@@ -6,11 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Jogo da Velha para jogar localmente no mesmo dispositivo ou online com amigos através de link de convite direto.">
     <title>Jogo da Velha</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js" defer></script>
-    <script src="game-core.js" defer></script>
-    <script src="online.js" defer></script>
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="styles.css?v=3">
+    <script src="game-core.js?v=3" defer></script>
+    <script src="online.js?v=3" defer></script>
+    <script src="script.js?v=3" defer></script>
 </head>
 <body>
     <div class="app-shell">
@@ -33,47 +32,42 @@
         </nav>
 
         <section class="online-panel" id="onlinePanel" hidden>
-            <div class="panel-card" id="onlineLobby">
-                <div class="field-group">
-                    <label for="playerNameInput">Seu nome</label>
-                    <input type="text" id="playerNameInput" maxlength="20" placeholder="Ex: Jefferson" autocomplete="nickname">
-                </div>
-
-                <button type="button" class="btn btn-primary btn-full" id="createRoomBtn">
-                    Criar sala e gerar link de convite
-                </button>
-
-                <div class="divider"><span>ou entre com um código</span></div>
-
-                <form class="join-form" id="joinRoomForm">
-                    <input type="text" id="roomCodeInput" placeholder="Código ou link da sala" autocomplete="off" spellcheck="false" aria-label="Código ou link da sala">
-                    <button type="submit" class="btn btn-secondary" id="joinRoomBtn">Entrar</button>
-                </form>
-            </div>
-
-            <div class="panel-card" id="onlineRoom" hidden>
+            <div class="panel-card" id="onlineRoom">
                 <div class="room-header">
                     <div class="status-pill" id="connectionPill">
                         <span class="status-dot" id="connectionDot" aria-hidden="true"></span>
-                        <span id="connectionStatusText">Conectando...</span>
+                        <span id="connectionStatusText">Conectando sala...</span>
                     </div>
-                    <span class="room-code-badge" id="roomCodeBadge">Sala: ------</span>
+                    <div class="room-header-right">
+                        <span class="room-code-badge" id="roomCodeBadge">Sala: ------</span>
+                        <button type="button" class="btn btn-ghost btn-xs" id="newRoomBtn" title="Gerar nova sala">Nova sala</button>
+                    </div>
                 </div>
 
                 <div class="invite-box" id="inviteBox">
-                    <label for="inviteLinkInput">Link de convite direto</label>
-                    <div class="invite-row">
-                        <input type="text" id="inviteLinkInput" readonly aria-label="Link de convite da sala">
-                        <button type="button" class="btn btn-primary" id="copyInviteBtn">Copiar link</button>
-                        <button type="button" class="btn btn-secondary" id="shareInviteBtn" hidden>Compartilhar</button>
+                    <label for="inviteLinkInput">Link de convite direto (envie para quem vai jogar com você)</label>
+                    <input type="text" id="inviteLinkInput" readonly aria-label="Link de convite da sala">
+                    <div class="invite-actions">
+                        <button type="button" class="btn btn-primary btn-sm" id="copyInviteBtn">Copiar link de convite</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="shareInviteBtn" hidden>Compartilhar</button>
+                        <button type="button" class="btn btn-ghost btn-sm" id="retryConnectBtn" hidden>Reconectar</button>
                     </div>
-                    <p class="invite-hint">Envie este link para quem vai jogar com você. Ao clicar, a pessoa entra direto na partida.</p>
                 </div>
 
-                <div class="room-footer-actions">
-                    <button type="button" class="btn btn-ghost btn-sm" id="retryConnectBtn" hidden>Tentar novamente</button>
-                    <button type="button" class="btn btn-danger-ghost btn-sm" id="leaveRoomBtn">Sair da sala</button>
+                <div class="room-tools">
+                    <div class="name-inline">
+                        <label for="playerNameInput">Seu nome:</label>
+                        <input type="text" id="playerNameInput" maxlength="20" placeholder="Ex: Jefferson" autocomplete="nickname">
+                    </div>
+                    <button type="button" class="btn btn-ghost btn-xs" id="toggleJoinBtn" aria-expanded="false">
+                        Entrar com código
+                    </button>
                 </div>
+
+                <form class="join-form" id="joinRoomForm" hidden>
+                    <input type="text" id="roomCodeInput" placeholder="Cole o código ou link da sala" autocomplete="off" spellcheck="false" aria-label="Código ou link da sala">
+                    <button type="submit" class="btn btn-secondary btn-sm" id="joinRoomBtn">Entrar</button>
+                </form>
             </div>
         </section>
 

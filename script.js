@@ -1,6 +1,6 @@
 (function () {
   const Core = window.JogoCore;
-  const { OnlineSession, BROKERS } = window.JogoOnline;
+  const { OnlineSession } = window.JogoOnline;
 
   const THEME_STORAGE_KEY = 'jv_theme';
   const NAME_STORAGE_KEY = 'jv_player_name';
@@ -13,22 +13,19 @@
   const modeOnlineBtn = document.getElementById('modeOnlineBtn');
 
   const onlinePanel = document.getElementById('onlinePanel');
-  const onlineLobby = document.getElementById('onlineLobby');
-  const onlineRoom = document.getElementById('onlineRoom');
   const playerNameInput = document.getElementById('playerNameInput');
-  const createRoomBtn = document.getElementById('createRoomBtn');
+  const newRoomBtn = document.getElementById('newRoomBtn');
+  const toggleJoinBtn = document.getElementById('toggleJoinBtn');
   const joinRoomForm = document.getElementById('joinRoomForm');
   const roomCodeInput = document.getElementById('roomCodeInput');
 
   const connectionDot = document.getElementById('connectionDot');
   const connectionStatusText = document.getElementById('connectionStatusText');
   const roomCodeBadge = document.getElementById('roomCodeBadge');
-  const inviteBox = document.getElementById('inviteBox');
   const inviteLinkInput = document.getElementById('inviteLinkInput');
   const copyInviteBtn = document.getElementById('copyInviteBtn');
   const shareInviteBtn = document.getElementById('shareInviteBtn');
   const retryConnectBtn = document.getElementById('retryConnectBtn');
-  const leaveRoomBtn = document.getElementById('leaveRoomBtn');
 
   const gameArea = document.getElementById('gameArea');
   const playerXCard = document.getElementById('playerXCard');
@@ -86,7 +83,6 @@
     const savedSession = readRoomSession();
 
     if (roomCode) {
-      setMode('online', { clearUrl: false });
       if (savedSession && savedSession.roomCode === roomCode && savedSession.clientId) {
         if (savedSession.role === 'host' && savedSession.roomState) {
           resumeHostRoom(savedSession);
@@ -133,6 +129,17 @@
 
     playerNameInput.addEventListener('input', () => {
       localStorage.setItem(NAME_STORAGE_KEY, playerNameInput.value.trim().slice(0, 20));
+      if (currentMode === 'online' && onlineRole === 'host' && onlineRoomState) {
+        onlineRoomState = {
+          ...onlineRoomState,
+          hostName: getPlayerName('Anfitrião')
+        };
+        saveRoomSession();
+        if (onlineSession) {
+          onlineSession.send({ type: 'room_state', roomState: onlineRoomState });
+        }
+        render();
+      }
     });
 
     modeLocalBtn.addEventListener('click', () => {
@@ -141,12 +148,23 @@
     });
 
     modeOnlineBtn.addEventListener('click', () => {
-      if (currentMode === 'online') return;
-      setMode('online', { clearUrl: false });
+      if (currentMode === 'online' && activeRoomCode) return;
+      createOnlineRoom();
     });
 
-    createRoomBtn.addEventListener('click', () => {
+    newRoomBtn.addEventListener('click', () => {
+      joinRoomForm.hidden = true;
+      toggleJoinBtn.setAttribute('aria-expanded', 'false');
       createOnlineRoom();
+    });
+
+    toggleJoinBtn.addEventListener('click', () => {
+      const willShow = joinRoomForm.hidden;
+      joinRoomForm.hidden = !willShow;
+      toggleJoinBtn.setAttribute('aria-expanded', String(willShow));
+      if (willShow) {
+        roomCodeInput.focus();
+      }
     });
 
     joinRoomForm.addEventListener('submit', e => {
@@ -157,6 +175,9 @@
         roomCodeInput.focus();
         return;
       }
+      joinRoomForm.hidden = true;
+      toggleJoinBtn.setAttribute('aria-expanded', 'false');
+      roomCodeInput.value = '';
       joinOnlineRoom(parsed.roomCode, parsed.brokerIndex);
     });
 
@@ -171,10 +192,6 @@
       } else {
         joinOnlineRoom(activeRoomCode, activeBrokerIndex, myClientId);
       }
-    });
-
-    leaveRoomBtn.addEventListener('click', () => {
-      leaveOnlineRoom({ switchToLocal: false });
     });
 
     cellElements.forEach((cell, index) => {
@@ -243,17 +260,10 @@
     modeOnlineBtn.setAttribute('aria-pressed', String(isOnline));
 
     onlinePanel.hidden = !isOnline;
+    gameArea.hidden = false;
 
-    if (isOnline) {
-      const inRoom = Boolean(activeRoomCode);
-      onlineLobby.hidden = inRoom;
-      onlineRoom.hidden = !inRoom;
-      gameArea.hidden = !inRoom;
-    } else {
-      onlineLobby.hidden = true;
-      onlineRoom.hidden = true;
-      gameArea.hidden = false;
-      if (clearUrl) clearRoomUrl();
+    if (!isOnline && clearUrl) {
+      clearRoomUrl();
     }
 
     hideWinningOverlay();
@@ -261,18 +271,22 @@
   }
 
   function clearRoomUrl() {
-    const url = new URL(window.location.href);
-    if (url.searchParams.has('sala') || url.searchParams.has('b')) {
-      url.searchParams.delete('sala');
-      url.searchParams.delete('b');
-      window.history.replaceState({}, '', url.toString());
-    }
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('sala') || url.searchParams.has('b')) {
+        url.searchParams.delete('sala');
+        url.searchParams.delete('b');
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch (_) {}
   }
 
   function updateRoomUrl(roomCode, brokerIndex) {
     const inviteUrl = Core.buildInviteUrl(window.location.href, roomCode, brokerIndex);
-    window.history.replaceState({}, '', inviteUrl);
     inviteLinkInput.value = inviteUrl;
+    try {
+      window.history.replaceState({}, '', inviteUrl);
+    } catch (_) {}
   }
 
   function saveRoomSession() {
@@ -315,7 +329,7 @@
   // ==================== ONLINE MODE ====================
 
   function createOnlineRoom() {
-    cleanupOnlineSession(false);
+    cleanupOnlineSession(true);
 
     onlineRole = 'host';
     myClientId = Core.generateClientId();
@@ -359,7 +373,6 @@
     cleanupOnlineSession(false);
     retryConnectBtn.hidden = true;
     roomCodeBadge.textContent = `Sala: ${roomCode}`;
-    inviteBox.hidden = false;
 
     onlineSession = new OnlineSession({
       roomCode,
@@ -381,7 +394,7 @@
             onlineSession.send({ type: 'room_state', roomState: onlineRoomState });
             setConnectionUI('connected', 'Conectado — partida ativa');
           } else {
-            setConnectionUI('waiting', 'Aguardando oponente entrar pelo link...');
+            setConnectionUI('waiting', 'Sala pronta! Aguardando oponente...');
           }
         } else if (status === 'reconnecting') {
           setConnectionUI('connecting', 'Reconectando...');
@@ -508,7 +521,6 @@
 
     retryConnectBtn.hidden = true;
     roomCodeBadge.textContent = `Sala: ${roomCode}`;
-    inviteBox.hidden = false;
 
     onlineSession = new OnlineSession({
       roomCode,
@@ -583,7 +595,7 @@
       stopJoinHandshake();
       onlineSession.setTrackingPeer(false);
       setConnectionUI('error', 'Esta sala já está cheia (2 jogadores).');
-      showToast('Sala cheia! Crie uma nova sala para jogar.');
+      showToast('Sala cheia! Clique em "Nova sala" para jogar.');
       return;
     }
 
@@ -642,7 +654,7 @@
     if (switchToLocal) {
       setMode('local', { clearUrl: true });
     } else {
-      setMode('online', { clearUrl: true });
+      createOnlineRoom();
     }
   }
 
@@ -724,7 +736,6 @@
           round: onlineRoomState.round
         });
       }
-      // Optimistic local mark until room_state arrives back
       onlineRoomState = {
         ...onlineRoomState,
         rematchReady: {
@@ -842,7 +853,7 @@
     }
 
     if (s.status === 'waiting') {
-      statusBanner.textContent = 'Aguardando oponente entrar pelo link de convite...';
+      statusBanner.textContent = 'Compartilhe o link acima para começar';
       inlineRematchBtn.hidden = true;
       hideWinningOverlay();
       return;
@@ -890,7 +901,7 @@
       btnText = 'Aceitar revanche';
     }
 
-    statusBanner.textContent = `${title} ${oppReady && !iAmReady ? '— Oponente quer revanche!' : ''}`;
+    statusBanner.textContent = `${title}${oppReady && !iAmReady ? ' — Oponente quer revanche!' : ''}`;
     inlineRematchBtn.hidden = false;
     inlineRematchBtn.textContent = btnText;
     inlineRematchBtn.disabled = btnDisabled;
@@ -980,9 +991,7 @@
         text: 'Vem jogar Jogo da Velha comigo! Clique no link para entrar direto na partida:',
         url: link
       });
-    } catch (_) {
-      // User cancelled share sheet
-    }
+    } catch (_) {}
   }
 
   function showToast(message) {
