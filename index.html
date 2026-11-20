@@ -1,32 +1,143 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <script src="script.js" defer></script>
+    <meta name="description" content="Jogo da Velha para jogar localmente no mesmo dispositivo ou online com amigos através de link de convite direto.">
     <title>Jogo da Velha</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js" defer></script>
+    <script src="game-core.js" defer></script>
+    <script src="online.js" defer></script>
+    <script src="script.js" defer></script>
 </head>
 <body>
-    <div class="board" id="board">
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-    </div>
-    <div class="winning-message" id="winningMessage">
-        <div data-winning-message-text></div>
-        <button id="restartButton">Reiniciar</button>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="brand">
+                <h1>Jogo da Velha</h1>
+            </div>
+            <button type="button" class="icon-btn" id="themeToggle" aria-label="Alternar tema claro e escuro" title="Alternar tema">
+                <span class="theme-icon" id="themeIcon" aria-hidden="true">🌙</span>
+            </button>
+        </header>
+
+        <nav class="mode-switcher" aria-label="Modo de jogo">
+            <button type="button" class="mode-btn active" id="modeLocalBtn" aria-pressed="true">
+                Local (Mesmo aparelho)
+            </button>
+            <button type="button" class="mode-btn" id="modeOnlineBtn" aria-pressed="false">
+                Online (Link de convite)
+            </button>
+        </nav>
+
+        <section class="online-panel" id="onlinePanel" hidden>
+            <div class="panel-card" id="onlineLobby">
+                <div class="field-group">
+                    <label for="playerNameInput">Seu nome</label>
+                    <input type="text" id="playerNameInput" maxlength="20" placeholder="Ex: Jefferson" autocomplete="nickname">
+                </div>
+
+                <button type="button" class="btn btn-primary btn-full" id="createRoomBtn">
+                    Criar sala e gerar link de convite
+                </button>
+
+                <div class="divider"><span>ou entre com um código</span></div>
+
+                <form class="join-form" id="joinRoomForm">
+                    <input type="text" id="roomCodeInput" placeholder="Código ou link da sala" autocomplete="off" spellcheck="false" aria-label="Código ou link da sala">
+                    <button type="submit" class="btn btn-secondary" id="joinRoomBtn">Entrar</button>
+                </form>
+            </div>
+
+            <div class="panel-card" id="onlineRoom" hidden>
+                <div class="room-header">
+                    <div class="status-pill" id="connectionPill">
+                        <span class="status-dot" id="connectionDot" aria-hidden="true"></span>
+                        <span id="connectionStatusText">Conectando...</span>
+                    </div>
+                    <span class="room-code-badge" id="roomCodeBadge">Sala: ------</span>
+                </div>
+
+                <div class="invite-box" id="inviteBox">
+                    <label for="inviteLinkInput">Link de convite direto</label>
+                    <div class="invite-row">
+                        <input type="text" id="inviteLinkInput" readonly aria-label="Link de convite da sala">
+                        <button type="button" class="btn btn-primary" id="copyInviteBtn">Copiar link</button>
+                        <button type="button" class="btn btn-secondary" id="shareInviteBtn" hidden>Compartilhar</button>
+                    </div>
+                    <p class="invite-hint">Envie este link para quem vai jogar com você. Ao clicar, a pessoa entra direto na partida.</p>
+                </div>
+
+                <div class="room-footer-actions">
+                    <button type="button" class="btn btn-ghost btn-sm" id="retryConnectBtn" hidden>Tentar novamente</button>
+                    <button type="button" class="btn btn-danger-ghost btn-sm" id="leaveRoomBtn">Sair da sala</button>
+                </div>
+            </div>
+        </section>
+
+        <main class="game-area" id="gameArea">
+            <section class="scoreboard" aria-label="Placar">
+                <div class="score-card score-x" id="playerXCard">
+                    <span class="score-mark mark-x" aria-hidden="true">X</span>
+                    <div class="score-meta">
+                        <span class="score-label" id="labelPlayerX">Jogador X</span>
+                        <strong class="score-value" id="scoreX">0</strong>
+                    </div>
+                </div>
+                <div class="score-card score-draws">
+                    <span class="score-label">Empates</span>
+                    <strong class="score-value" id="scoreDraws">0</strong>
+                </div>
+                <div class="score-card score-o" id="playerOCard">
+                    <span class="score-mark mark-o" aria-hidden="true">O</span>
+                    <div class="score-meta">
+                        <span class="score-label" id="labelPlayerO">Jogador O</span>
+                        <strong class="score-value" id="scoreO">0</strong>
+                    </div>
+                </div>
+            </section>
+
+            <div class="turn-banner" id="statusBanner" role="status" aria-live="polite">
+                Vez de X
+            </div>
+
+            <div class="board" id="board" role="grid" aria-label="Tabuleiro do Jogo da Velha">
+                <div class="cell" data-cell data-index="0" role="button" tabindex="0" aria-label="Casa 1"></div>
+                <div class="cell" data-cell data-index="1" role="button" tabindex="0" aria-label="Casa 2"></div>
+                <div class="cell" data-cell data-index="2" role="button" tabindex="0" aria-label="Casa 3"></div>
+                <div class="cell" data-cell data-index="3" role="button" tabindex="0" aria-label="Casa 4"></div>
+                <div class="cell" data-cell data-index="4" role="button" tabindex="0" aria-label="Casa 5"></div>
+                <div class="cell" data-cell data-index="5" role="button" tabindex="0" aria-label="Casa 6"></div>
+                <div class="cell" data-cell data-index="6" role="button" tabindex="0" aria-label="Casa 7"></div>
+                <div class="cell" data-cell data-index="7" role="button" tabindex="0" aria-label="Casa 8"></div>
+                <div class="cell" data-cell data-index="8" role="button" tabindex="0" aria-label="Casa 9"></div>
+            </div>
+
+            <div class="game-actions" id="gameActions">
+                <button type="button" class="btn btn-secondary" id="localRestartBtn">Reiniciar partida</button>
+                <button type="button" class="btn btn-ghost" id="localResetScoreBtn">Zerar placar</button>
+                <button type="button" class="btn btn-primary" id="inlineRematchBtn" hidden>Pedir revanche</button>
+            </div>
+        </main>
+
+        <footer>
+            <p>Créditos: Jefferson Elias</p>
+        </footer>
     </div>
 
-    <footer>
-        <p>Creditos: Jefferson Elias</p>
-      </footer>
+    <div class="winning-message" id="winningMessage" role="dialog" aria-modal="true" aria-labelledby="winningText">
+        <div class="winning-card">
+            <div class="winning-title" id="winningText" data-winning-message-text></div>
+            <p class="winning-subtext" id="winningSubtext"></p>
+            <div class="winning-actions">
+                <button type="button" class="btn btn-primary btn-lg" id="restartButton">Reiniciar</button>
+                <button type="button" class="btn btn-ghost" id="closeOverlayBtn">Ver tabuleiro</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body>
 </html>

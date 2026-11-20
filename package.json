@@ -1,0 +1,9 @@
+{
+  "name": "jogo-da-velha",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Jogo da Velha com modo local e multiplayer online via link de convite",
+  "scripts": {
+    "test": "node --test"
+  }
+}
